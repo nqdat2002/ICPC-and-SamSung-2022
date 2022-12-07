@@ -1,0 +1,91 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+typedef long long ll;
+typedef unsigned long long ull;
+typedef long double ld;
+typedef pair<int, int> p;
+typedef vector<vector<int> > vt;
+typedef vector<pair<int, int> > vp;
+const ll mod = 1e9 + 7;
+const int oo = 1e6 + 7;
+
+#define f first
+#define s second
+#define pb push_back
+#define ep emplace_back
+#define sz(a) (int) a.size()
+#define ms(s, n) memset(s, n, sizeof(s))
+#define present(t, x) (t.find(x) != t.end())
+#define all(a) (a.begin(), a.end())
+#define For(i, l, r) for (int i = l; i <= r; i++)
+#define Fod(i, r, l) for (int i = r; i >= l; i--)
+#define fillchar(a, x) memset(a, x, sizeof (a))
+#define faster ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
+
+void FileIO() {
+	freopen("input.txt", "r", stdin);
+	freopen("output.txt", "w", stdout);
+}
+
+ll divisorsOfNchooseK(int N, int K) {
+
+	int M = max((int)sqrt(N), K);
+	vector<bool> prime(M + 1, true);
+	prime[0] = prime[1] = false;
+	ll len = prime.size();
+	for (int p = 2; p * p < len; p++) {
+		if (prime[p]) {
+			for (int i = 2 * p; i < len; i += p) {
+				prime[i] = false;
+			}
+		}
+	}
+	vector<int> deno(K + 1);
+
+	for (int i = 1; i <= K; i++) {
+		deno[i] = i;
+	}
+	vector<int> nume(K);
+	int offset = N - K + 1;
+	for (int i = 0; i < K; i++) {
+		nume[i] = offset + i;
+	}
+	long long ans = 1;
+	for (int p = 2; p < len; p++) {
+		if (prime[p]) {
+			ll power = 0;
+			for (int i = p; i <= K; i += p) {
+				while (deno[i] % p == 0) {
+					power--;
+					deno[i] /= p;
+				}
+			}
+			for (int i = ((N - K + 1) + p - 1) / p * p; i <= N; i += p) {
+				while (nume[i - offset] % p == 0) {
+					power++;
+					nume[i - offset] /= p;
+				}
+			}
+			ans *= (power + 1);
+		}
+	}
+	for (int i = N - K + 1; i <= N; i++) {
+		if (nume[i - offset] != 1) {
+			ans *= 2;
+		}
+	}
+	return ans;
+}
+
+int main() {
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL);
+	cout.tie(NULL);
+	int n, k;
+	while (cin >> n >> k) {
+		cout << divisorsOfNchooseK(n, k) << endl;
+	}
+	return 0;
+}

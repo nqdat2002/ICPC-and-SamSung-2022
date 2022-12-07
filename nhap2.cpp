@@ -1,0 +1,140 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+typedef long long ll;
+typedef unsigned long long ull;
+typedef long double ld;
+typedef pair<int, int> p;
+typedef vector<vector<int> > vt;
+typedef vector<pair<int, int> > vp;
+const int oo = 1e6 + 7;
+
+#define f first
+#define s second
+#define pb push_back
+#define ep emplace_back
+#define sz(a) (int) a.size()
+#define ms(s, n) memset(s, n, sizeof(s))
+#define present(t, x) (t.find(x) != t.end())
+#define all(a) (a.begin(), a.end())
+#define For(i, l, r) for (int i = l; i <= r; i++)
+#define Fod(i, r, l) for (int i = r; i >= l; i--)
+#define fillchar(a, x) memset(a, x, sizeof (a))
+#define faster ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
+
+void FileIO(){
+    freopen("input.txt", "r", stdin);
+    freopen("output.txt", "w", stdout);
+}
+
+#define MAXN 100010
+#define MP make_pair
+typedef pair<int, int> ii;
+vector<ii> grafo[MAXN];
+int pai[MAXN], superpai[MAXN], nivel[MAXN], estrela[MAXN], segmento, n;
+ii ligapai[MAXN], ligasuperpai[MAXN];
+void dfs_pai(int x) {
+    for (int i = 0; i < grafo[x].size(); i++) {
+        int v = grafo[x][i].first;
+        if (pai[v] == -1) {
+            pai[v] = x;
+            ligapai[v] = MP(grafo[x][i].second, grafo[x][i].second);
+            nivel[v] = nivel[x] + 1;
+            dfs_pai(v);
+        }
+    }
+}
+void dfs_superpai(int x, int p) {
+    superpai[x] = p;
+    if (nivel[x] % segmento == 0) {
+        p = x;
+        estrela[x] = 1;
+    }
+    for (int i = 0; i < grafo[x].size(); i++) {
+        int v = grafo[x][i].first;
+        if (superpai[v] == -1) {
+            dfs_superpai(v, p);
+        }
+    }
+}
+ii LCA(int u, int v) {
+    int maior = -1, menor = 1e9 + 1;
+    while (superpai[u] != superpai[v]) {
+        if (nivel[u] > nivel[v]) {
+            if (!estrela[u]) {
+                menor = min(ligapai[u].first, menor);
+                maior = max(ligapai[u].second, maior);
+                u = pai[u];
+            } else {
+                menor = min(ligasuperpai[u].first, menor);
+                maior = max(ligasuperpai[u].second, maior);
+                u = superpai[u];
+            }
+        } else {
+            if (!estrela[v]) {
+                menor = min(ligapai[v].first, menor);
+                maior = max(ligapai[v].second, maior);
+                v = pai[v];
+            } else {
+                menor = min(ligasuperpai[v].first, menor);
+                maior = max(ligasuperpai[v].second, maior);
+                v = superpai[v];
+            }
+        }
+    }
+    while (u != v) {
+        if (nivel[u] > nivel[v]) {
+            menor = min(ligapai[u].first, menor);
+            maior = max(ligapai[u].second, maior);
+            u = pai[u];
+        } else {
+            menor = min(ligapai[v].first, menor);
+            maior = max(ligapai[v].second, maior);
+            v = pai[v];
+        }
+    }
+    return MP(menor, maior);
+}
+int main() {
+    scanf("%d", &n);
+    segmento = 1;
+    for (int i = 1; i <= n; i++) {
+        pai[i] = superpai[i] = -1;
+    }
+    for (int i = 1; i < n; i++) {
+        int u, v, peso;
+        scanf("%d %d %d", &u, &v, &peso);
+        grafo[u].push_back(MP(v, peso));
+        grafo[v].push_back(MP(u, peso));
+    }
+    nivel[1] = 0;
+    pai[1] = 1;
+    superpai[1] = 1;
+    ligapai[1] = MP(1000000001, -1);
+    dfs_pai(1);
+    for (int i = 1; i <= n; i++) segmento = max(segmento, nivel[i]);
+    segmento = sqrt(segmento);
+    dfs_superpai(1, 1);
+    for (int i = 1; i <= n; i++) {
+        if (!estrela[i]) continue;
+        int alvo = superpai[i];
+        int menor = 1e9 + 1, maior = -1;
+        int temp = i;
+        while (temp != alvo) {
+            menor = min(ligapai[temp].first, menor);
+            maior = max(ligapai[temp].second, maior);
+            temp = pai[temp];
+        }
+        ligasuperpai[i] = MP(menor, maior);
+    }
+    int q;
+    scanf("%d", &q);
+    while (q--) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        ii resp = LCA(u, v);
+        printf("%d %d\n", resp.first, resp.second);
+    }
+    return 0;
+}
